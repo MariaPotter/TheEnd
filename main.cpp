@@ -1,89 +1,100 @@
 #include <cmath>
 #include <cstdio>
-#include <fftw3.h>
+#include <fftw3.h>        //БДПФ
 #include <iostream>
 #include <stdlib.h>
 
 using namespace std;
-
+#define Pi static_cast<long double> (3.14159265358979323846)
 unsigned int N = 4;
 
-double f (double x, double y, double z);
-double u (double x, double y, double z);
-void   change_F (double* G, double* F);
-double norm (double* G, double* U);
+long double f (long double x, long double y, long double z);
+long double u (long double x, long double y, long double z);
+void        change_F (long double* G, long double* F);
+long double norm (long double* G, long double* U);
 
 int main()
 {
-    unsigned int i, j, k, m;
+    unsigned int m;
     int          n = static_cast<int> (N - 1);
-    double *     F, *U, *G;
-    fftw_plan    p;
-    m = static_cast<unsigned int> (pow (N - 1, 3));
-    G = static_cast<double*> (fftw_malloc (sizeof (double) * m));
-    F = static_cast<double*> (fftw_malloc (sizeof (double) * m));
-    U = static_cast<double*> (fftw_malloc (sizeof (double) * m));
-    m = static_cast<unsigned int> (pow (N - 1, 2));
-    for (i = 1; i < N; i++)
+    long double* F;
+    long double* U;
+    long double* G;
+    fftwl_plan   p;
+
+    m = static_cast<unsigned int> (pow (n, 3));
+    G = static_cast<long double*> (fftw_malloc (sizeof (long double) * m));
+    F = static_cast<long double*> (fftw_malloc (sizeof (long double) * m));
+    U = static_cast<long double*> (fftw_malloc (sizeof (long double) * m));
+    m = static_cast<unsigned int> (pow (n, 2));
+
+    for (unsigned int i = 1; i < N; i++)
     {
-        for (j = 1; j < N; j++)
+        for (unsigned int j = 1; j < N; j++)
         {
-            for (k = 1; k < N; k++)
+            for (unsigned int k = 1; k < N; k++)
             {
                 F[(i - 1) * m + (j - 1) * (N - 1) + k - 1] =
-                    f (M_PI * i / N, M_PI * j / N, M_PI * k / N);
+                    f (Pi * i / N, Pi * j / N, Pi * k / N);
                 U[(i - 1) * m + (j - 1) * (N - 1) + k - 1] =
-                    u (M_PI * i / N, M_PI * j / N, M_PI * k / N);
+                    u (Pi * i / N, Pi * j / N, Pi * k / N);
             }
         }
     }
 
-    p = fftw_plan_r2r_3d (n, n, n, F, G, FFTW_RODFT00, FFTW_RODFT00,
-                          FFTW_RODFT00, FFTW_ESTIMATE);
+    p = fftwl_plan_r2r_3d (n, n, n, F, G, FFTW_RODFT00, FFTW_RODFT00,
+                           FFTW_RODFT00, FFTW_ESTIMATE);
 
-    fftw_execute (p);
+    fftwl_execute (p);
     change_F (G, F);
-    fftw_execute (p);
+    fftwl_execute (p);
 
-    printf ("norm = %le\n", norm (G, U));
-    fftw_destroy_plan (p);
-    fftw_free (F);
-    fftw_free (G);
-    fftw_free (U);
+    printf ("norm = %Lf\n", norm (G, U));
+
+    fftwl_destroy_plan (p);
+
+    fftwl_free (F);
+    fftwl_free (G);
+    fftwl_free (U);
+
     return 0;
 }
 
-double f (double x, double y, double z)
+long double f (long double x, long double y, long double z)
 {
-    return 3 * sin (x) * sin (y) * sin (z);
+    return 3 * sinl (x) * sinl (y) * sinl (z);
 }
 
-double u (double x, double y, double z) { return sin (x) * sin (y) * sin (z); }
-
-void change_F (double* G, double* F)
+long double u (long double x, long double y, long double z)
 {
-    unsigned int i, j, k, m;
-    double*      c = new double[N - 1];
-    m              = static_cast<unsigned int> (pow (N - 1, 2));
-    for (i = 1; i < N; i++) c[i - 1] = pow (sin (i * M_PI / 2 / N), 2);
+    return sinl (x) * sinl (y) * sinl (z);
+}
 
-    for (i = 0; i < N - 1; i++)
+void change_F (long double* G, long double* F)
+{
+    unsigned int m;
+    long double* c = new long double[N - 1];
+    m              = static_cast<unsigned int> (powl (N - 1, 2));
+    for (unsigned int i = 1; i < N; i++)
+        c[i - 1] = powl (sinl (i * Pi / (2 * N)), 2);
+
+    for (unsigned int i = 0; i < N - 1; i++)
     {
-        for (j = 0; j < N - 1; j++)
+        for (unsigned int j = 0; j < N - 1; j++)
         {
-            for (k = 0; k < N - 1; k++)
+            for (unsigned int k = 0; k < N - 1; k++)
                 F[i * m + j * (N - 1) + k] =
-                    G[i * m + j * (N - 1) + k] /
-                    (pow (M_PI, -2) * pow (2 * N, 5) * (c[i] + c[j] + c[k]));
+                    G[i * m + j * (N - 1) + k] * powl (Pi, 2) /
+                    (powl (2 * N, 5) * (c[i] + c[j] + c[k]));
         }
     }
 }
 
-double norm (double* G, double* U)
+long double norm (long double* G, long double* U)
 {
-    double norm = 0.;
-    for (unsigned int i = 0; i < pow (N - 1, 3); i++)
-        norm += pow (U[i] - G[i], 2);
-    norm = sqrt (norm / pow (N + 1, 3));
+    long double norm = static_cast<long double> (0);
+    for (unsigned int i = 0; i < powl (N - 1, 3); i++)
+        norm += powl (U[i] - G[i], 2);
+    norm = sqrtl (norm / powl (N + 1, 3));
     return norm;
 }
