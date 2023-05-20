@@ -16,16 +16,19 @@ long double norm (long double* G, long double* U);
 int main()
 {
     unsigned int m;
-    int          n = static_cast<int> (N - 1);
+    int          n;
     long double* F;
     long double* U;
     long double* G;
     fftwl_plan   p;
 
+    n = static_cast<int> (N - 1);
     m = static_cast<unsigned int> (pow (n, 3));
+
     G = static_cast<long double*> (fftw_malloc (sizeof (long double) * m));
     F = static_cast<long double*> (fftw_malloc (sizeof (long double) * m));
     U = static_cast<long double*> (fftw_malloc (sizeof (long double) * m));
+    
     m = static_cast<unsigned int> (pow (n, 2));
 
     for (unsigned int i = 1; i < N; i++)
