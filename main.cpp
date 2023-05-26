@@ -170,6 +170,7 @@ void Runthrough_Method (double* in, double* out, unsigned int N)
     delete[] c;
     delete[] d;
     delete[] e;
+    delete[] f;
 }
 
 double norm (double* G, double* U, unsigned int N)
