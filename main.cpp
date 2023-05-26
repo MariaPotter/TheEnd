@@ -6,9 +6,9 @@ using namespace std;
 
 double f (double G, double y, double z);
 double u (double G, double y, double z);
-void   change_F (double* G, double* F, unsigned int N);
-double norm (double* G, double* U, unsigned int N);
 void   Runthrough_Method (double* F, double* G, unsigned int N);
+double norm (double* G, double* U, unsigned int N);
+void   change_F (double* G, double* F, unsigned int N);
 
 int main (int argc, char* argv[])
 {
@@ -72,40 +72,6 @@ double f (double G, double y, double z)
 }
 
 double u (double G, double y, double z) { return sin (G) * sin (y) * sin (z); }
-
-void change_F (double* G, double* F, unsigned int N)
-{
-    unsigned int m;
-    double*      c;
-
-    m = static_cast<unsigned int> (pow (N - 1, 2));
-    c = new double[N - 1];
-
-    for (unsigned int i = 1; i < N; i++)
-        c[i - 1] = pow (2 * N * sin (i * M_PI / (2 * N)) / M_PI, 2);
-
-    for (unsigned int i = 0; i < N - 1; i++)
-    {
-        for (unsigned int j = 0; j < N - 1; j++)
-        {
-            for (unsigned int k = 0; k < N - 1; k++)
-                F[i * m + j * (N - 1) + k] =
-                    G[i * m + j * (N - 1) + k] /
-                    (pow (2 * N, 3) * (c[i] + c[j] + c[k]));
-        }
-    }
-}
-
-double norm (double* G, double* U, unsigned int N)
-{
-    double norm;
-    norm = static_cast<double> (0);
-
-    for (unsigned int i = 0; i < pow (N - 1, 3); i++)
-        norm += pow (U[i] - G[i], 2);
-
-    return sqrt (norm / pow (N + 1, 3));
-}
 
 void Runthrough_Method (double* F, double* G, unsigned int N)
 {
@@ -204,3 +170,38 @@ void Runthrough_Method (double* F, double* G, unsigned int N)
     delete[] d;
     delete[] e;
 }
+
+double norm (double* G, double* U, unsigned int N)
+{
+    double norm;
+    norm = static_cast<double> (0);
+
+    for (unsigned int i = 0; i < pow (N - 1, 3); i++)
+        norm += pow (U[i] - G[i], 2);
+
+    return sqrt (norm / pow (N + 1, 3));
+}
+
+void change_F (double* G, double* F, unsigned int N)
+{
+    unsigned int m;
+    double*      c;
+
+    m = static_cast<unsigned int> (pow (N - 1, 2));
+    c = new double[N - 1];
+
+    for (unsigned int i = 1; i < N; i++)
+        c[i - 1] = pow (2 * N * sin (i * M_PI / (2 * N)) / M_PI, 2);
+
+    for (unsigned int i = 0; i < N - 1; i++)
+    {
+        for (unsigned int j = 0; j < N - 1; j++)
+        {
+            for (unsigned int k = 0; k < N - 1; k++)
+                F[i * m + j * (N - 1) + k] =
+                    G[i * m + j * (N - 1) + k] /
+                    (pow (2 * N, 3) * (c[i] + c[j] + c[k]));
+        }
+    }
+}
+
