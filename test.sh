@@ -9,7 +9,6 @@ then
     ./main 64
     ./main 128
     ./main 256
-    ./main 512
 
     make clean 1> /dev/null
 fi

@@ -6,9 +6,8 @@ using namespace std;
 
 double f (double G, double y, double z);
 double u (double G, double y, double z);
-void   Runthrough_Method (double* F, double* G, unsigned int N);
+void   Runthrough_Method (double* in, double* out, unsigned int N);        //Прогонка
 double norm (double* G, double* U, unsigned int N);
-void   change_F (double* G, double* F, unsigned int N);
 
 int main (int argc, char* argv[])
 {
@@ -71,9 +70,11 @@ double f (double G, double y, double z)
     return 3 * sin (G) * sin (y) * sin (z);
 }
 
+void change_F (double* in, double* out, unsigned int N);
+
 double u (double G, double y, double z) { return sin (G) * sin (y) * sin (z); }
 
-void Runthrough_Method (double* F, double* G, unsigned int N)
+void Runthrough_Method (double* in, double* out, unsigned int N)
 {
     double* y = new double[N];
     double* q = new double[N];
@@ -90,18 +91,18 @@ void Runthrough_Method (double* F, double* G, unsigned int N)
 
     for (unsigned int i = 0; i < N; i++)
     {
-        if (i > 1) e[i] = F[i * N + i - 2];
+        if (i > 1) e[i] = in[i * N + i - 2];
         else e[i] = 0;
 
-        if (i > 0) c[i] = F[i * N + i - 1];
+        if (i > 0) c[i] = in[i * N + i - 1];
         else c[i] = 0;
 
-        d[i] = F[i * (1 + N)];
+        d[i] = in[i * (1 + N)];
 
-        if (i < N - 1) a[i] = F[i * N + i + 1];
+        if (i < N - 1) a[i] = in[i * N + i + 1];
         else a[i] = 0;
 
-        if (i < N - 2) b[i] = F[i * N + i + 2];
+        if (i < N - 2) b[i] = in[i * N + i + 2];
         else b[i] = 0;
 
         y[i] = 0;
@@ -109,7 +110,7 @@ void Runthrough_Method (double* F, double* G, unsigned int N)
         p[i] = 0;
         l[i] = 0;
         z[i] = 0;
-        f[i] = F[i * N + N + 1];
+        f[i] = in[i * N + N + 1];
     }
     y[0] = 0;
     q[0] = d[0];
@@ -147,16 +148,16 @@ void Runthrough_Method (double* F, double* G, unsigned int N)
     z[N - 1] =
         (f[N - 1] - z[N - 2] * e[N - 1] - z[N - 2] * y[N - 1]) / q[N - 1];
 
-    G[N - 1] = z[N - 1];
-    G[N - 2] = z[N - 2] - l[N - 2] * G[N - 1];
+    out[N - 1] = z[N - 1];
+    out[N - 2] = z[N - 2] - l[N - 2] * out[N - 1];
 
     for (int i = static_cast<int> (N) - 3; i > -1; i--)
     {
-        G[i] = z[i] - l[i] * G[i + 1] - p[i] * G[i + 2];
+        out[i] = z[i] - l[i] * out[i + 1] - p[i] * out[i + 2];
     }
-    G[N - 1] = 0;
+    out[N - 1] = 0;
 
-    change_F (F, G, N);
+    change_F (in, out, N);
 
     delete[] y;
     delete[] q;
@@ -182,7 +183,7 @@ double norm (double* G, double* U, unsigned int N)
     return sqrt (norm / pow (N + 1, 3));
 }
 
-void change_F (double* G, double* F, unsigned int N)
+void change_F (double* in, double* out, unsigned int N)
 {
     unsigned int m;
     double*      c;
@@ -198,10 +199,9 @@ void change_F (double* G, double* F, unsigned int N)
         for (unsigned int j = 0; j < N - 1; j++)
         {
             for (unsigned int k = 0; k < N - 1; k++)
-                F[i * m + j * (N - 1) + k] =
-                    G[i * m + j * (N - 1) + k] /
+                out[i * m + j * (N - 1) + k] =
+                    in[i * m + j * (N - 1) + k] /
                     (pow (2 * N, 3) * (c[i] + c[j] + c[k]));
         }
     }
 }
-
